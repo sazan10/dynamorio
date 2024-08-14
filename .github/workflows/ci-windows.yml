@@ -37,14 +37,6 @@ on:
   # Run on pushes to master and on pull request changes, including from a
   # forked repo with no "push" trigger, while avoiding duplicate triggers.
   push:
-    branches:
-      - master
-  pull_request:
-    types: [opened, reopened, synchronize]
-  merge_group:
-
-  # Manual trigger using the Actions page. May remove when integration complete.
-  workflow_dispatch:
 
 defaults:
   run:
@@ -61,11 +53,7 @@ jobs:
       with:
         submodules: true
 
-    # Cancel any prior runs for a PR (but do not cancel master branch runs).
-    - uses: n1hility/cancel-previous-runs@v2
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-      if: ${{ github.event_name == 'pull_request' }}
+
 
     - name: Fetch Sources
       run: git fetch --no-tags --depth=1 origin master
@@ -80,6 +68,7 @@ jobs:
     - name: Run Suite
       working-directory: ${{ github.workspace }}
       run: |
+        mkdir -p dynamoriologs
         echo ------ Setting up paths ------
         7z x c:\projects\install\ninja.zip -oc:\projects\install\ninja > nul
         set PATH=c:\projects\install\ninja;%PATH%
@@ -94,29 +83,12 @@ jobs:
         CI_TRIGGER: ${{ github.event_name }}
         CI_BRANCH: ${{ github.ref }}
 
-    - name: Send failure mail to dynamorio-devs
-      if: failure() && github.ref == 'refs/heads/master'
-      uses: dawidd6/action-send-mail@v2
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
       with:
-        server_address: smtp.gmail.com
-        server_port: 465
-        username: ${{secrets.DYNAMORIO_NOTIFICATION_EMAIL_USERNAME}}
-        password: ${{secrets.DYNAMORIO_NOTIFICATION_EMAIL_PASSWORD}}
-        subject: |
-          [${{github.repository}}] ${{github.workflow}} FAILED
-          on ${{github.event_name}} at ${{github.ref}}
-        body: |
-          Github Actions CI workflow run FAILED!
-          Workflow: ${{github.workflow}}/vs2019-32
-          Repository: ${{github.repository}}
-          Branch ref: ${{github.ref}}
-          SHA: ${{github.sha}}
-          Triggering actor: ${{github.actor}}
-          Triggering event: ${{github.event_name}}
-          Run Id: ${{github.run_id}}
-          See more details on github.com/DynamoRIO/dynamorio/actions/runs/${{github.run_id}}
-        to: dynamorio-devs@googlegroups.com
-        from: Github Action CI
+        name: test-results-32-bit
+        path: dynamoriologs/dynamorio-test-on-32-bit-win19.log
 
   ###########################################################################
   # 64-bit VS2019 and tests:
@@ -128,11 +100,7 @@ jobs:
       with:
         submodules: true
 
-    # Cancel any prior runs for a PR (but do not cancel master branch runs).
-    - uses: n1hility/cancel-previous-runs@v2
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-      if: ${{ github.event_name == 'pull_request' }}
+
 
     - name: Fetch Sources
       run: git fetch --no-tags --depth=1 origin master
@@ -147,6 +115,7 @@ jobs:
     - name: Run Suite
       working-directory: ${{ github.workspace }}
       run: |
+        mkdir -p dynamoriologs
         echo ------ Setting up paths ------
         7z x c:\projects\install\ninja.zip -oc:\projects\install\ninja > nul
         set PATH=c:\projects\install\ninja;%PATH%
@@ -161,29 +130,12 @@ jobs:
         CI_TRIGGER: ${{ github.event_name }}
         CI_BRANCH: ${{ github.ref }}
 
-    - name: Send failure mail to dynamorio-devs
-      if: failure() && github.ref == 'refs/heads/master'
-      uses: dawidd6/action-send-mail@v2
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
       with:
-        server_address: smtp.gmail.com
-        server_port: 465
-        username: ${{secrets.DYNAMORIO_NOTIFICATION_EMAIL_USERNAME}}
-        password: ${{secrets.DYNAMORIO_NOTIFICATION_EMAIL_PASSWORD}}
-        subject: |
-          [${{github.repository}}] ${{github.workflow}} FAILED
-          on ${{github.event_name}} at ${{github.ref}}
-        body: |
-          Github Actions CI workflow run FAILED!
-          Workflow: ${{github.workflow}}/vs2019-64
-          Repository: ${{github.repository}}
-          Branch ref: ${{github.ref}}
-          SHA: ${{github.sha}}
-          Triggering actor: ${{github.actor}}
-          Triggering event: ${{github.event_name}}
-          Run Id: ${{github.run_id}}
-          See more details on github.com/DynamoRIO/dynamorio/actions/runs/${{github.run_id}}
-        to: dynamorio-devs@googlegroups.com
-        from: Github Action CI
+        name: test-results-64-bit
+        path: dynamoriologs/dynamorio-test-on-64-bit-win19.log
 
   ###########################################################################
   # 32-bit and 64-bit VS2019 release builds:
@@ -195,11 +147,6 @@ jobs:
       with:
         submodules: true
 
-    # Cancel any prior runs for a PR (but do not cancel master branch runs).
-    - uses: n1hility/cancel-previous-runs@v2
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-      if: ${{ github.event_name == 'pull_request' }}
 
     - name: Fetch Sources
       run: git fetch --no-tags --depth=1 origin master
@@ -214,6 +161,7 @@ jobs:
     - name: Run Suite
       working-directory: ${{ github.workspace }}
       run: |
+        mkdir -p dynamoriologs
         echo ------ Setting up paths ------
         7z x c:\projects\install\ninja.zip -oc:\projects\install\ninja > nul
         set PATH=c:\projects\install\ninja;%PATH%
@@ -227,27 +175,10 @@ jobs:
       env:
         CI_TRIGGER: ${{ github.event_name }}
         CI_BRANCH: ${{ github.ref }}
-
-    - name: Send failure mail to dynamorio-devs
-      if: failure() && github.ref == 'refs/heads/master'
-      uses: dawidd6/action-send-mail@v2
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
       with:
-        server_address: smtp.gmail.com
-        server_port: 465
-        username: ${{secrets.DYNAMORIO_NOTIFICATION_EMAIL_USERNAME}}
-        password: ${{secrets.DYNAMORIO_NOTIFICATION_EMAIL_PASSWORD}}
-        subject: |
-          [${{github.repository}}] ${{github.workflow}} FAILED
-          on ${{github.event_name}} at ${{github.ref}}
-        body: |
-          Github Actions CI workflow run FAILED!
-          Workflow: ${{github.workflow}}/vs2019-builds
-          Repository: ${{github.repository}}
-          Branch ref: ${{github.ref}}
-          SHA: ${{github.sha}}
-          Triggering actor: ${{github.actor}}
-          Triggering event: ${{github.event_name}}
-          Run Id: ${{github.run_id}}
-          See more details on github.com/DynamoRIO/dynamorio/actions/runs/${{github.run_id}}
-        to: dynamorio-devs@googlegroups.com
-        from: Github Action CI
+        name: test-results-release-builds
+        path: dynamoriologs/dynamorio-test-on-release-win19.log
+
+
