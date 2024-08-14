@@ -181,4 +181,3 @@ jobs:
         name: test-results-release-builds
         path: dynamoriologs/dynamorio-test-on-release-win19.log
 
-
