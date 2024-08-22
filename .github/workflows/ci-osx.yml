@@ -39,6 +39,7 @@ on:
 defaults:
   run:
     shell: bash
+    
 jobs:
   # 64-bit OSX build with clang and run tests:
   osx-x86-64:
