@@ -43,7 +43,6 @@ jobs:
   # 64-bit OSX build with clang and run tests:
   osx-x86-64:
     runs-on: macos-12
-
     steps:
     - uses: actions/checkout@v2
       with:
