@@ -50,7 +50,6 @@ jobs:
       with:
         submodules: true
 
-
     - name: Create Build Environment
       # XXX: We should install doxygen too but it's a different version and
       # hits issues about incompatible options in the Doxyfile.
